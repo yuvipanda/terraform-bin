@@ -28,7 +28,7 @@ Sample `.pre-commit-config.yaml`:
 ```yaml
 
 - repo: https://github.com/yuvipanda/terraform-bin
-  rev: v1.0.0
+  rev: v2.0.0
   hooks:
     - id: terraform-fmt
 ```
