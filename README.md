@@ -4,10 +4,9 @@
 
 (Copied almost verbatim from [shellcheck-py](https://github.com/shellcheck-py/shellcheck-py/))
 
-A python wrapper to provide a pip-installable [terraform] binary.
-
-Internally this package provides a convenient way to download the pre-built
-shellcheck binary for your particular platform.
+A python wrapper to provide a pip-installable [terraform] binary,
+primarily for use with [pre-commit.ci](https://pre-commit.ci). It does
+not allow us to install `terraform` easily there, so we wrap it into PyPI.
 
 ### installation
 
@@ -27,10 +26,11 @@ See [pre-commit] for instructions
 Sample `.pre-commit-config.yaml`:
 
 ```yaml
--   repo: https://github.com/-py/shellcheck-py
-    rev: v0.9.0.2
-    hooks:
-    -   id: shellcheck
+
+- repo: https://github.com/yuvipanda/terraform-bin
+  rev: v1.0.0
+  hooks:
+    - id: terraform-fmt
 ```
 
 [terraform]: https://www.terraform.io/
