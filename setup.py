@@ -17,41 +17,39 @@ from distutils.core import Command
 from setuptools import setup
 from setuptools.command.install import install as orig_install
 
-SHELLCHECK_VERSION = '0.9.0'
+TERRAFORM_VERSION = '1.4.6'
 POSTFIX_SHA256 = {
-    ('linux', 'armv6hf'): (
-        'linux.armv6hf.tar.xz',
-        '03deed9ded9dd66434ccf9649815bcde7d275d6c9f6dcf665b83391673512c75',
-    ),
     ('linux', 'aarch64'): (
-        'linux.aarch64.tar.xz',
-        '179c579ef3481317d130adebede74a34dbbc2df961a70916dd4039ebf0735fae',
+        '_linux_arm64.zip',
+        'b38f5db944ac4942f11ceea465a91e365b0636febd9998c110fbbe95d61c3b26'
     ),
     ('linux', 'x86_64'): (
-        'linux.x86_64.tar.xz',
-        '700324c6dd0ebea0117591c6cc9d7350d9c7c5c287acbad7630fa17b1d4d9e2f',
+        '_linux_amd64.zip',
+        'e079db1a8945e39b1f8ba4e513946b3ab9f32bd5a2bdf19b9b186d22c5a3d53b',
     ),
     ('darwin', 'x86_64'): (
-        'darwin.x86_64.tar.xz',
-        '7d3730694707605d6e60cec4efcb79a0632d61babc035aa16cda1b897536acf5',
+        '_darwin_amd64.zip',
+        '5d8332994b86411b049391d31ad1a0785dfb470db8b9c50617de28ddb5d1f25d',
+    ),
+    ('darwin', 'arm64'): (
+        '_darwin_arm64.zip',
+        '30a2f87298ff9f299452119bd14afaa8d5b000c572f62fa64baf432e35d9dec1',
     ),
     ('win32', 'AMD64'): (
-        'zip',
-        'ae58191b1ea4ffd9e5b15da9134146e636440302ce3e2f46863e8d71c8be1bbb',
+        '_windows_amd64.zip',
+        'f666aa1388f94c9b86ea01cb884ba53b9132d2cec3d9cac976ad93a2aba901d5',
     ),
 }
 POSTFIX_SHA256[('cygwin', 'x86_64')] = POSTFIX_SHA256[('win32', 'AMD64')]
-POSTFIX_SHA256[('darwin', 'arm64')] = POSTFIX_SHA256[('darwin', 'x86_64')]
-POSTFIX_SHA256[('linux', 'armv7l')] = POSTFIX_SHA256[('linux', 'armv6hf')]
-PY_VERSION = '2'
+PY_VERSION = '1'
 
 
 def get_download_url() -> tuple[str, str]:
     postfix, sha256 = POSTFIX_SHA256[(sys.platform, platform.machine())]
     url = (
-        f'https://github.com/koalaman/shellcheck/releases/download/'
-        f'v{SHELLCHECK_VERSION}/shellcheck-v{SHELLCHECK_VERSION}.{postfix}'
+        f'https://releases.hashicorp.com/terraform/{TERRAFORM_VERSION}/terraform_{TERRAFORM_VERSION}{postfix}'
     )
+    print(url)
     return url, sha256
 
 
@@ -71,22 +69,17 @@ def download(url: str, sha256: str) -> bytes:
 
 def extract(url: str, data: bytes) -> bytes:
     with io.BytesIO(data) as bio:
-        if '.tar.' in url:
-            with tarfile.open(fileobj=bio) as tarf:
-                for info in tarf.getmembers():
-                    if info.isfile() and info.name.endswith('shellcheck'):
-                        return tarf.extractfile(info).read()
-        elif url.endswith('.zip'):
+        if url.endswith('.zip'):
             with zipfile.ZipFile(bio) as zipf:
                 for info in zipf.infolist():
-                    if info.filename.endswith('.exe'):
+                    if info.filename.endswith('.exe') or info.filename.endswith('terraform'):
                         return zipf.read(info.filename)
 
     raise AssertionError(f'unreachable {url}')
 
 
 def save_executable(data: bytes, base_dir: str):
-    exe = 'shellcheck' if sys.platform != 'win32' else 'shellcheck.exe'
+    exe = 'terraform' if sys.platform != 'win32' else 'terraform.exe'
     output_path = os.path.join(base_dir, exe)
     os.makedirs(base_dir)
 
@@ -105,7 +98,7 @@ class build(orig_build):
 
 
 class install(orig_install):
-    sub_commands = orig_install.sub_commands + [('install_shellcheck', None)]
+    sub_commands = orig_install.sub_commands + [('install_terraform', None)]
 
 
 class fetch_binaries(Command):
@@ -125,8 +118,8 @@ class fetch_binaries(Command):
         save_executable(data, self.build_temp)
 
 
-class install_shellcheck(Command):
-    description = 'install the shellcheck executable'
+class install_terraform(Command):
+    description = 'install the terraform executable'
     outfiles = ()
     build_dir = install_dir = None
 
@@ -149,7 +142,7 @@ class install_shellcheck(Command):
 
 command_overrides = {
     'install': install,
-    'install_shellcheck': install_shellcheck,
+    'install_terraform': install_terraform,
     'build': build,
     'fetch_binaries': fetch_binaries,
 }
@@ -173,4 +166,4 @@ else:
 
     command_overrides['bdist_wheel'] = bdist_wheel
 
-setup(version=f'{SHELLCHECK_VERSION}.{PY_VERSION}', cmdclass=command_overrides)
+setup(version=f'{TERRAFORM_VERSION}.{PY_VERSION}', cmdclass=command_overrides)
