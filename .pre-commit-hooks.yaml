@@ -1,10 +1,7 @@
 - id: terraform-fmt
   name: Terraform fmt
   description: Rewrites all Terraform configuration files to a canonical format
-  entry:
-    - terraform
-    - fmt
-    - -write
+  entry: terraform fmt -write
   language: python
   files: \.tf$
   exclude: \.+.terraform\/.*$
