@@ -3,6 +3,6 @@
   description: Rewrites all Terraform configuration files to a canonical format
   entry: terraform fmt -write
   language: python
-  files: \.tf$
+  files: \.(tf|tfvars)$
   exclude: \.+.terraform\/.*$
   require_serial: true
